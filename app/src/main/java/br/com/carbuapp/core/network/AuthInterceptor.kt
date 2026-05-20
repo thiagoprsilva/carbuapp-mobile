@@ -9,11 +9,23 @@ import javax.inject.Inject
 class AuthInterceptor @Inject constructor(
     private val tokenDataStore: TokenDataStore
 ) : Interceptor {
+
     override fun intercept(chain: Interceptor.Chain): Response {
-        val token = runBlocking { tokenDataStore.getToken() }
+        val (token, selectedOficinaId) = runBlocking {
+            Pair(
+                tokenDataStore.getToken(),
+                tokenDataStore.getSelectedOficinaId()
+            )
+        }
+
         val request = chain.request().newBuilder()
-            .apply { if (token != null) addHeader("Authorization", "Bearer $token") }
+            .apply {
+                if (token != null) addHeader("Authorization", "Bearer $token")
+                // Superadmin: informa ao backend qual oficina está acessando
+                if (selectedOficinaId != null) addHeader("X-Oficina-Id", selectedOficinaId.toString())
+            }
             .build()
+
         return chain.proceed(request)
     }
 }

@@ -29,7 +29,7 @@ import br.com.carbuapp.core.util.UiState
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (isSuperAdmin: Boolean) -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -39,10 +39,11 @@ fun LoginScreen(
     var senha by remember { mutableStateOf("") }
     var senhaVisivel by remember { mutableStateOf(false) }
 
-    // Navegar ao fazer login com sucesso
+    // Navegar ao fazer login com sucesso — passa o role para o NavHost decidir para onde ir
     LaunchedEffect(uiState) {
         if (uiState is UiState.Success) {
-            onLoginSuccess()
+            val user = (uiState as UiState.Success).data
+            onLoginSuccess(user.isSuperAdmin)
             viewModel.resetState()
         }
     }

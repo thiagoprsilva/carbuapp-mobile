@@ -11,24 +11,24 @@ import retrofit2.http.Query
 
 interface VeiculoApiService {
 
-    @GET("api/veiculos")
+    @GET("veiculos")
     suspend fun list(@Query("clienteId") clienteId: Int? = null): List<VeiculoDto>
 
-    @GET("api/veiculos/{id}")
+    @GET("veiculos/{id}")
     suspend fun getById(@Path("id") id: Int): VeiculoDto
 
-    @GET("api/veiculos/{id}/timeline")
+    @GET("veiculos/{id}/timeline")
     suspend fun getTimeline(@Path("id") id: Int): JsonArray   // deserialização manual por tipo
 
-    @POST("api/veiculos")
+    @POST("veiculos")
     suspend fun create(@Body request: VeiculoRequest): VeiculoDto
 
-    @PUT("api/veiculos/{id}")
+    @PUT("veiculos/{id}")
     suspend fun update(
         @Path("id") id: Int,
         @Body request: VeiculoRequest
     ): VeiculoDto
 
-    @DELETE("api/veiculos/{id}")
+    @DELETE("veiculos/{id}")
     suspend fun delete(@Path("id") id: Int)
 }

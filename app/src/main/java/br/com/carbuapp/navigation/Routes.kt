@@ -5,6 +5,9 @@ sealed class Routes(val route: String) {
     // Auth
     object Login : Routes("login")
 
+    // Superadmin: seleção de oficina pós-login
+    object OficinaSelecao : Routes("oficina-selecao")
+
     // Shell principal (contém BottomNavBar)
     object Main : Routes("main")
 
@@ -44,9 +47,14 @@ sealed class Routes(val route: String) {
     object OSDetail : Routes("ordens/{osId}") {
         fun createRoute(osId: Int) = "ordens/$osId"
     }
-    object OSForm : Routes("ordens/form?osId={osId}") {
-        fun createRoute(osId: Int? = null) =
-            if (osId != null) "ordens/form?osId=$osId" else "ordens/form"
+    object OSForm : Routes("ordens/form?osId={osId}&veiculoId={veiculoId}") {
+        fun createRoute(osId: Int? = null, veiculoId: Int? = null): String {
+            val params = buildList {
+                if (osId != null)      add("osId=$osId")
+                if (veiculoId != null) add("veiculoId=$veiculoId")
+            }
+            return if (params.isEmpty()) "ordens/form" else "ordens/form?${params.joinToString("&")}"
+        }
     }
     object EntradaRapida : Routes("ordens/entrada-rapida")
 
@@ -54,9 +62,14 @@ sealed class Routes(val route: String) {
     object OrcamentoDetail : Routes("orcamentos/{orcamentoId}") {
         fun createRoute(orcamentoId: Int) = "orcamentos/$orcamentoId"
     }
-    object OrcamentoForm : Routes("orcamentos/form?orcamentoId={orcamentoId}") {
-        fun createRoute(orcamentoId: Int? = null) =
-            if (orcamentoId != null) "orcamentos/form?orcamentoId=$orcamentoId" else "orcamentos/form"
+    object OrcamentoForm : Routes("orcamentos/form?orcamentoId={orcamentoId}&osId={osId}") {
+        fun createRoute(orcamentoId: Int? = null, osId: Int? = null): String {
+            val params = buildList {
+                if (orcamentoId != null) add("orcamentoId=$orcamentoId")
+                if (osId != null)        add("osId=$osId")
+            }
+            return if (params.isEmpty()) "orcamentos/form" else "orcamentos/form?${params.joinToString("&")}"
+        }
     }
 
     // Perfil / Configurações

@@ -9,21 +9,21 @@ import retrofit2.http.Path
 
 interface ClienteApiService {
 
-    @GET("api/clientes")
+    @GET("clientes")
     suspend fun list(): List<ClienteDto>
 
-    @GET("api/clientes/{id}")
+    @GET("clientes/{id}")
     suspend fun getById(@Path("id") id: Int): ClienteDto
 
-    @POST("api/clientes")
+    @POST("clientes")
     suspend fun create(@Body request: ClienteRequest): ClienteDto
 
-    @PUT("api/clientes/{id}")
+    @PUT("clientes/{id}")
     suspend fun update(
         @Path("id") id: Int,
         @Body request: ClienteRequest
     ): ClienteDto
 
-    @DELETE("api/clientes/{id}")
+    @DELETE("clientes/{id}")
     suspend fun delete(@Path("id") id: Int)
 }

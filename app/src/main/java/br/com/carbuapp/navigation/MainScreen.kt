@@ -14,12 +14,21 @@ import br.com.carbuapp.clientes.ui.ClienteDetailScreen
 import br.com.carbuapp.clientes.ui.ClienteFormScreen
 import br.com.carbuapp.clientes.ui.ClienteListScreen
 import br.com.carbuapp.dashboard.ui.DashboardScreen
+import br.com.carbuapp.menu.ui.MenuScreen
+import br.com.carbuapp.orcamentos.ui.OrcamentoDetailScreen
+import br.com.carbuapp.orcamentos.ui.OrcamentoFormScreen
+import br.com.carbuapp.orcamentos.ui.OrcamentoListScreen
+import br.com.carbuapp.ordens.ui.OSDetailScreen
+import br.com.carbuapp.ordens.ui.OSFormScreen
+import br.com.carbuapp.ordens.ui.OSListScreen
 import br.com.carbuapp.veiculos.ui.VeiculoDetailScreen
 import br.com.carbuapp.veiculos.ui.VeiculoFormScreen
 import br.com.carbuapp.veiculos.ui.VeiculoListScreen
 
 @Composable
-fun MainScreen(rootNavController: NavHostController) {
+fun MainScreen(
+    rootNavController: NavHostController
+) {
     val mainNavController = rememberNavController()
 
     Scaffold(
@@ -32,7 +41,10 @@ fun MainScreen(rootNavController: NavHostController) {
         ) {
             // ── Dashboard ──────────────────────────────────────────────────────
             composable(Routes.Dashboard.route) {
-                DashboardScreen()
+                DashboardScreen(
+                    onOSClick        = { osId  -> mainNavController.navigate(Routes.OSDetail.createRoute(osId)) },
+                    onOrcamentoClick = { orcId -> mainNavController.navigate(Routes.OrcamentoDetail.createRoute(orcId)) }
+                )
             }
 
             // ── Clientes ───────────────────────────────────────────────────────
@@ -103,21 +115,87 @@ fun MainScreen(rootNavController: NavHostController) {
             }
 
             // ── OS ─────────────────────────────────────────────────────────────
-            composable(Routes.Ordens.route) { PlaceholderScreen("Ordens de Serviço") }
+            composable(Routes.Ordens.route) {
+                OSListScreen(
+                    onOSClick  = { osId -> mainNavController.navigate(Routes.OSDetail.createRoute(osId)) },
+                    onAddClick = { mainNavController.navigate(Routes.OSForm.createRoute()) }
+                )
+            }
             composable(
                 route = Routes.OSDetail.route,
                 arguments = listOf(navArgument("osId") { type = NavType.IntType })
-            ) { PlaceholderScreen("Detalhe OS") }
+            ) { back ->
+                val osId = back.arguments!!.getInt("osId")
+                OSDetailScreen(
+                    onBack = { mainNavController.popBackStack() },
+                    onEdit = { id -> mainNavController.navigate(Routes.OSForm.createRoute(id)) }
+                )
+            }
+            composable(
+                route = Routes.OSForm.route,
+                arguments = listOf(
+                    navArgument("osId")      { type = NavType.IntType; defaultValue = -1 },
+                    navArgument("veiculoId") { type = NavType.IntType; defaultValue = -1 }
+                )
+            ) { back ->
+                val osId      = back.arguments?.getInt("osId")?.takeIf { it != -1 }
+                val veiculoId = back.arguments?.getInt("veiculoId")?.takeIf { it != -1 }
+                OSFormScreen(
+                    osId      = osId,
+                    veiculoId = veiculoId,
+                    onBack    = { mainNavController.popBackStack() },
+                    onSaved   = { mainNavController.popBackStack() }
+                )
+            }
 
             // ── Orçamentos ─────────────────────────────────────────────────────
-            composable(Routes.Orcamentos.route) { PlaceholderScreen("Orçamentos") }
+            composable(Routes.Orcamentos.route) {
+                OrcamentoListScreen(
+                    onOrcamentoClick = { id -> mainNavController.navigate(Routes.OrcamentoDetail.createRoute(id)) },
+                    onAddClick       = { mainNavController.navigate(Routes.OrcamentoForm.createRoute()) }
+                )
+            }
             composable(
                 route = Routes.OrcamentoDetail.route,
                 arguments = listOf(navArgument("orcamentoId") { type = NavType.IntType })
-            ) { PlaceholderScreen("Detalhe Orçamento") }
+            ) {
+                OrcamentoDetailScreen(
+                    onBack = { mainNavController.popBackStack() },
+                    onEdit = { id -> mainNavController.navigate(Routes.OrcamentoForm.createRoute(id)) }
+                )
+            }
+            composable(
+                route = Routes.OrcamentoForm.route,
+                arguments = listOf(
+                    navArgument("orcamentoId") { type = NavType.IntType; defaultValue = -1 },
+                    navArgument("osId")        { type = NavType.IntType; defaultValue = -1 }
+                )
+            ) { back ->
+                val orcamentoId = back.arguments?.getInt("orcamentoId")?.takeIf { it != -1 }
+                val osId        = back.arguments?.getInt("osId")?.takeIf { it != -1 }
+                OrcamentoFormScreen(
+                    orcamentoId = orcamentoId,
+                    osId        = osId,
+                    onBack      = { mainNavController.popBackStack() },
+                    onSaved     = { mainNavController.popBackStack() }
+                )
+            }
 
             // ── Menu ───────────────────────────────────────────────────────────
-            composable(Routes.Menu.route) { PlaceholderScreen("Menu") }
+            composable(Routes.Menu.route) {
+                MenuScreen(
+                    onLogout = {
+                        rootNavController.navigate(Routes.Login.route) {
+                            popUpTo(Routes.Main.route) { inclusive = true }
+                        }
+                    },
+                    onTrocarOficina = {
+                        rootNavController.navigate(Routes.OficinaSelecao.route) {
+                            popUpTo(Routes.Main.route) { inclusive = true }
+                        }
+                    }
+                )
+            }
         }
     }
 }

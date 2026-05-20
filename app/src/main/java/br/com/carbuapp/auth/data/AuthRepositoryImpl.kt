@@ -42,7 +42,7 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun logout() {
-        tokenDataStore.clearToken()
+        tokenDataStore.clearAll()   // limpa token + oficina selecionada
         userDao.clearAll()
     }
 }
