@@ -1,6 +1,5 @@
 package br.com.carbuapp.navigation
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -23,9 +22,8 @@ fun AppNavHost(navController: NavHostController) {
             )
         }
 
-        // Placeholder — será substituído pela MainScreen com Bottom Navigation
         composable(Routes.Main.route) {
-            Text(text = "Login realizado com sucesso! Dashboard em breve.")
+            MainScreen(rootNavController = navController)
         }
     }
 }
