@@ -21,6 +21,10 @@ import br.com.carbuapp.orcamentos.ui.OrcamentoListScreen
 import br.com.carbuapp.ordens.ui.OSDetailScreen
 import br.com.carbuapp.ordens.ui.OSFormScreen
 import br.com.carbuapp.ordens.ui.OSListScreen
+import br.com.carbuapp.fotos.ui.FotoGalleryScreen
+import br.com.carbuapp.laudos.ui.LaudoScreen
+import br.com.carbuapp.templates.ui.TemplateFormScreen
+import br.com.carbuapp.templates.ui.TemplateListScreen
 import br.com.carbuapp.veiculos.ui.VeiculoDetailScreen
 import br.com.carbuapp.veiculos.ui.VeiculoFormScreen
 import br.com.carbuapp.veiculos.ui.VeiculoListScreen
@@ -127,8 +131,26 @@ fun MainScreen(
             ) { back ->
                 val osId = back.arguments!!.getInt("osId")
                 OSDetailScreen(
-                    onBack = { mainNavController.popBackStack() },
-                    onEdit = { id -> mainNavController.navigate(Routes.OSForm.createRoute(id)) }
+                    onBack   = { mainNavController.popBackStack() },
+                    onEdit   = { id -> mainNavController.navigate(Routes.OSForm.createRoute(id)) },
+                    onLaudo  = { id -> mainNavController.navigate(Routes.Laudo.createRoute(id)) },
+                    onFotos  = { id -> mainNavController.navigate(Routes.FotoGallery.createRoute(id)) }
+                )
+            }
+            composable(
+                route = Routes.Laudo.route,
+                arguments = listOf(navArgument("osId") { type = NavType.IntType })
+            ) {
+                LaudoScreen(
+                    onBack = { mainNavController.popBackStack() }
+                )
+            }
+            composable(
+                route = Routes.FotoGallery.route,
+                arguments = listOf(navArgument("osId") { type = NavType.IntType })
+            ) {
+                FotoGalleryScreen(
+                    onBack = { mainNavController.popBackStack() }
                 )
             }
             composable(
@@ -193,7 +215,26 @@ fun MainScreen(
                         rootNavController.navigate(Routes.OficinaSelecao.route) {
                             popUpTo(Routes.Main.route) { inclusive = true }
                         }
-                    }
+                    },
+                    onTemplates = { mainNavController.navigate(Routes.TemplateList.route) }
+                )
+            }
+
+            // ── Templates ──────────────────────────────────────────────────────
+            composable(Routes.TemplateList.route) {
+                TemplateListScreen(
+                    onBack     = { mainNavController.popBackStack() },
+                    onAddClick = { mainNavController.navigate(Routes.TemplateForm.createRoute()) },
+                    onEditClick = { id -> mainNavController.navigate(Routes.TemplateForm.createRoute(id)) }
+                )
+            }
+            composable(
+                route = Routes.TemplateForm.route,
+                arguments = listOf(navArgument("templateId") { type = NavType.IntType; defaultValue = -1 })
+            ) {
+                TemplateFormScreen(
+                    onBack  = { mainNavController.popBackStack() },
+                    onSaved = { mainNavController.popBackStack() }
                 )
             }
         }

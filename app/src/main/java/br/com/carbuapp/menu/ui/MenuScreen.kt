@@ -19,6 +19,7 @@ import br.com.carbuapp.auth.domain.model.User
 fun MenuScreen(
     onLogout: () -> Unit,
     onTrocarOficina: () -> Unit,
+    onTemplates: () -> Unit = {},
     viewModel: MenuViewModel = hiltViewModel()
 ) {
     val user by viewModel.currentUser.collectAsStateWithLifecycle()
@@ -39,6 +40,14 @@ fun MenuScreen(
                 UserCard(user = u)
                 Spacer(Modifier.height(8.dp))
             }
+
+            // ── Seção: Ferramentas ────────────────────────────────────────
+            MenuSectionHeader("Ferramentas")
+            MenuItemRow(
+                icon  = Icons.Default.Build,
+                label = "Templates de Serviço",
+                onClick = onTemplates
+            )
 
             // ── Seção: Conta ──────────────────────────────────────────────
             MenuSectionHeader("Conta")

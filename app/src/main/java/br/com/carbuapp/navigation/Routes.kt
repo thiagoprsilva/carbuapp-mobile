@@ -58,6 +58,16 @@ sealed class Routes(val route: String) {
     }
     object EntradaRapida : Routes("ordens/entrada-rapida")
 
+    // Laudo de Entrada
+    object Laudo : Routes("laudos/{osId}") {
+        fun createRoute(osId: Int) = "laudos/$osId"
+    }
+
+    // Fotos da OS
+    object FotoGallery : Routes("fotos/{osId}") {
+        fun createRoute(osId: Int) = "fotos/$osId"
+    }
+
     // Orçamentos
     object OrcamentoDetail : Routes("orcamentos/{orcamentoId}") {
         fun createRoute(orcamentoId: Int) = "orcamentos/$orcamentoId"
@@ -72,9 +82,16 @@ sealed class Routes(val route: String) {
         }
     }
 
+    // Templates de Serviço
+    object TemplateList : Routes("templates")
+    object TemplateForm : Routes("templates/form?templateId={templateId}") {
+        fun createRoute(templateId: Int? = null) =
+            if (templateId != null) "templates/form?templateId=$templateId"
+            else "templates/form"
+    }
+
     // Perfil / Configurações
-    object Perfil    : Routes("perfil")
-    object Oficina   : Routes("oficina")
-    object Usuarios  : Routes("usuarios")
-    object Templates : Routes("templates")
+    object Perfil   : Routes("perfil")
+    object Oficina  : Routes("oficina")
+    object Usuarios : Routes("usuarios")
 }

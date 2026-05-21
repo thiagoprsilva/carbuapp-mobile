@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -23,11 +24,12 @@ data class BottomNavItem(
 )
 
 private val bottomNavItems = listOf(
-    BottomNavItem("Dashboard",  Routes.Dashboard.route,  Icons.Default.Dashboard),
-    BottomNavItem("Clientes",   Routes.Clientes.route,   Icons.Default.Person),
-    BottomNavItem("Veículos",   Routes.Veiculos.route,   Icons.Default.DirectionsCar),
-    BottomNavItem("OS",         Routes.Ordens.route,     Icons.Default.Build),
-    BottomNavItem("Menu",       Routes.Menu.route,       Icons.Default.Menu)
+    BottomNavItem("Dashboard",   Routes.Dashboard.route,   Icons.Default.Dashboard),
+    BottomNavItem("Clientes",    Routes.Clientes.route,    Icons.Default.Person),
+    BottomNavItem("Veículos",    Routes.Veiculos.route,    Icons.Default.DirectionsCar),
+    BottomNavItem("OS",          Routes.Ordens.route,      Icons.Default.Build),
+    BottomNavItem("Orçamentos",  Routes.Orcamentos.route,  Icons.Default.Receipt),
+    BottomNavItem("Menu",        Routes.Menu.route,        Icons.Default.Menu)
 )
 
 @Composable

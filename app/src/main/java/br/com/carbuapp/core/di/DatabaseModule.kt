@@ -4,6 +4,9 @@ import android.content.Context
 import androidx.room.Room
 import br.com.carbuapp.auth.data.local.UserDao
 import br.com.carbuapp.core.database.AppDatabase
+import br.com.carbuapp.fotos.data.local.FotoDao
+import br.com.carbuapp.templates.data.local.TemplateDao
+import br.com.carbuapp.laudos.data.local.LaudoDao
 import br.com.carbuapp.orcamentos.data.local.OrcamentoDao
 import br.com.carbuapp.ordens.data.local.OSDao
 import dagger.Module
@@ -36,4 +39,13 @@ object DatabaseModule {
 
     @Provides
     fun provideOrcamentoDao(db: AppDatabase): OrcamentoDao = db.orcamentoDao()
+
+    @Provides
+    fun provideLaudoDao(db: AppDatabase): LaudoDao = db.laudoDao()
+
+    @Provides
+    fun provideFotoDao(db: AppDatabase): FotoDao = db.fotoDao()
+
+    @Provides
+    fun provideTemplateDao(db: AppDatabase): TemplateDao = db.templateDao()
 }

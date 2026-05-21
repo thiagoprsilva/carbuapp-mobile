@@ -1,5 +1,6 @@
 package br.com.carbuapp.ordens.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -25,6 +26,8 @@ import br.com.carbuapp.ordens.domain.model.STATUS_OS
 fun OSDetailScreen(
     onBack: () -> Unit,
     onEdit: (Int) -> Unit,
+    onLaudo: (Int) -> Unit = {},
+    onFotos: (Int) -> Unit = {},
     viewModel: OSDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -83,8 +86,10 @@ fun OSDetailScreen(
                     Button(onClick = viewModel::load) { Text("Tentar novamente") }
                 }
                 is UiState.Success -> OSDetalheContent(
-                    detalhe = state.data,
-                    actionLoading = actionState is UiState.Loading
+                    detalhe       = state.data,
+                    actionLoading = actionState is UiState.Loading,
+                    onLaudo       = { onLaudo(state.data.os.id) },
+                    onFotos       = { onFotos(state.data.os.id) }
                 )
                 else -> Unit
             }
@@ -140,7 +145,12 @@ fun OSDetailScreen(
 }
 
 @Composable
-private fun OSDetalheContent(detalhe: OrdemServicoDetalhe, actionLoading: Boolean) {
+private fun OSDetalheContent(
+    detalhe: OrdemServicoDetalhe,
+    actionLoading: Boolean,
+    onLaudo: () -> Unit = {},
+    onFotos: () -> Unit = {}
+) {
     val os = detalhe.os
     Column(
         modifier = Modifier
@@ -201,14 +211,18 @@ private fun OSDetalheContent(detalhe: OrdemServicoDetalhe, actionLoading: Boolea
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             SubRecursoChip(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable(onClick = onLaudo),
                 icon = Icons.Default.Description,
                 label = "Laudo",
                 value = if (detalhe.temLaudo) "Preenchido" else "Sem laudo",
                 filled = detalhe.temLaudo
             )
             SubRecursoChip(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable(onClick = onFotos),
                 icon = Icons.Default.PhotoCamera,
                 label = "Fotos",
                 value = "${detalhe.totalFotos} foto(s)",
