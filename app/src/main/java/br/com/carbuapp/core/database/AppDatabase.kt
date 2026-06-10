@@ -34,7 +34,7 @@ import br.com.carbuapp.veiculos.data.local.VeiculoEntity
         TemplateEntity::class,
         TemplateItemEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

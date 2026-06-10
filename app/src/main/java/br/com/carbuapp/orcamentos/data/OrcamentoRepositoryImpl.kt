@@ -97,6 +97,15 @@ class OrcamentoRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getPdf(id: Int): Result<ByteArray> {
+        return try {
+            val body = apiService.getPdf(id)
+            Result.success(body.bytes())
+        } catch (e: Exception) {
+            Result.failure(Exception(parseHttpError(e)))
+        }
+    }
+
     private fun OrcamentoItemInput.toDto() = OrcamentoItemRequest(
         descricao = descricao,
         qtd = qtd,

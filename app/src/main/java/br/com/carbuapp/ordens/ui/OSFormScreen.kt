@@ -5,6 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -12,7 +13,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.carbuapp.core.util.UiState
-import br.com.carbuapp.ordens.domain.model.STATUS_OS
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,19 +29,50 @@ fun OSFormScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val categoriaValue by viewModel.categoria.collectAsStateWithLifecycle()
-    val descricaoValue by viewModel.descricao.collectAsStateWithLifecycle()
-    val dataServicoValue by viewModel.dataServico.collectAsStateWithLifecycle()
-    val observacoesValue by viewModel.observacoes.collectAsStateWithLifecycle()
+    val categoriaValue    by viewModel.categoria.collectAsStateWithLifecycle()
+    val descricaoValue    by viewModel.descricao.collectAsStateWithLifecycle()
+    val dataServicoValue  by viewModel.dataServico.collectAsStateWithLifecycle()
+    val observacoesValue  by viewModel.observacoes.collectAsStateWithLifecycle()
 
-    val snackbarHost = remember { SnackbarHostState() }
-    var categoriaExpanded by remember { mutableStateOf(false) }
+    val snackbarHost       = remember { SnackbarHostState() }
+    var categoriaExpanded  by remember { mutableStateOf(false) }
+    var showDatePicker     by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState) {
         when (val s = uiState) {
             is UiState.Success -> onSaved()
             is UiState.Error   -> snackbarHost.showSnackbar(s.message)
             else -> Unit
+        }
+    }
+
+    // ── DatePickerDialog ──────────────────────────────────────────────────────
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = runCatching {
+                LocalDate.parse(dataServicoValue, DateTimeFormatter.ISO_LOCAL_DATE)
+                    .atStartOfDay(ZoneId.of("UTC"))
+                    .toInstant().toEpochMilli()
+            }.getOrNull()
+        )
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        val date = Instant.ofEpochMilli(millis)
+                            .atZone(ZoneId.of("UTC"))
+                            .toLocalDate()
+                        viewModel.dataServico.value = date.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                    }
+                    showDatePicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancelar") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
         }
     }
 
@@ -78,9 +113,7 @@ fun OSFormScreen(
                     readOnly = true,
                     label = { Text("Categoria *") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = categoriaExpanded) },
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth()
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
                 ExposedDropdownMenu(
                     expanded = categoriaExpanded,
@@ -98,12 +131,18 @@ fun OSFormScreen(
                 }
             }
 
-            // ── Data do serviço ──────────────────────────────────────────────
+            // ── Data do serviço — DatePicker ─────────────────────────────────
             OutlinedTextField(
                 value = dataServicoValue,
-                onValueChange = { viewModel.dataServico.value = it },
-                label = { Text("Data do serviço * (AAAA-MM-DD)") },
-                placeholder = { Text("ex: 2025-01-20") },
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Data do serviço *") },
+                placeholder = { Text("Selecione a data") },
+                trailingIcon = {
+                    IconButton(onClick = { showDatePicker = true }) {
+                        Icon(Icons.Default.CalendarMonth, contentDescription = "Abrir calendário")
+                    }
+                },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )

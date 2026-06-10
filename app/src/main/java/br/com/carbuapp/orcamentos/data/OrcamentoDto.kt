@@ -85,6 +85,7 @@ fun OrcamentoDto.toDomain() = Orcamento(
     modelo = veiculo?.modelo ?: "",
     clienteNome = veiculo?.cliente?.nome ?: "",
     clienteId = veiculo?.cliente?.id ?: 0,
+    clienteTelefone = veiculo?.cliente?.telefone,
     osId = registroTecnicoId,
     osNumero = registroTecnico?.numero ?: 0
 )
@@ -101,6 +102,7 @@ fun OrcamentoDto.toEntity() = OrcamentoEntity(
     modelo = veiculo?.modelo ?: "",
     clienteNome = veiculo?.cliente?.nome ?: "",
     clienteId = veiculo?.cliente?.id ?: 0,
+    clienteTelefone = veiculo?.cliente?.telefone,
     osId = registroTecnicoId,
     osNumero = registroTecnico?.numero ?: 0
 )
@@ -117,6 +119,7 @@ fun OrcamentoEntity.toDomain() = Orcamento(
     modelo = modelo,
     clienteNome = clienteNome,
     clienteId = clienteId,
+    clienteTelefone = clienteTelefone,
     osId = osId,
     osNumero = osNumero
 )

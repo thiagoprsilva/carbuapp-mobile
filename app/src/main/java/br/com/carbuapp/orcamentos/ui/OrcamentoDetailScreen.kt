@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -28,9 +29,10 @@ fun OrcamentoDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val actionState by viewModel.actionState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     val snackbarHost = remember { SnackbarHostState() }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var showStatusDialog by remember { mutableStateOf(false) }
+    var showStatusSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(actionState) {
         if (actionState is UiState.Error) {
@@ -51,12 +53,23 @@ fun OrcamentoDetailScreen(
                 actions = {
                     if (uiState is UiState.Success) {
                         val id = (uiState as UiState.Success<OrcamentoDetalhe>).data.orcamento.id
-                        IconButton(onClick = { showStatusDialog = true }) {
+                        // PDF
+                        IconButton(onClick = { viewModel.sharePdf(context) }) {
+                            Icon(Icons.Default.PictureAsPdf, "Gerar PDF")
+                        }
+                        // WhatsApp
+                        IconButton(onClick = { viewModel.openWhatsApp(context) }) {
+                            Icon(Icons.Default.Share, "Compartilhar WhatsApp")
+                        }
+                        // Status
+                        IconButton(onClick = { showStatusSheet = true }) {
                             Icon(Icons.Default.Edit, "Alterar status")
                         }
+                        // Editar
                         IconButton(onClick = { onEdit(id) }) {
                             Icon(Icons.Default.Create, "Editar")
                         }
+                        // Excluir
                         IconButton(onClick = { showDeleteDialog = true }) {
                             Icon(Icons.Default.Delete, "Excluir")
                         }
@@ -101,23 +114,74 @@ fun OrcamentoDetailScreen(
         )
     }
 
-    // ── Alterar status ────────────────────────────────────────────────────────
-    if (showStatusDialog) {
-        AlertDialog(
-            onDismissRequest = { showStatusDialog = false },
-            title = { Text("Alterar status") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    STATUS_ORCAMENTO.forEach { status ->
-                        TextButton(
-                            onClick = { showStatusDialog = false; viewModel.changeStatus(status) },
-                            modifier = Modifier.fillMaxWidth()
-                        ) { Text(status) }
+    // ── Bottom Sheet: alterar status ─────────────────────────────────────────
+    if (showStatusSheet) {
+        ModalBottomSheet(onDismissRequest = { showStatusSheet = false }) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Alterar status",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+                val currentStatus = (uiState as? UiState.Success<OrcamentoDetalhe>)?.data?.orcamento?.status
+                STATUS_ORCAMENTO.forEach { status ->
+                    val isSelected = status == currentStatus
+                    val (containerColor, contentColor) = orcamentoStatusColors(status)
+                    Surface(
+                        onClick = { showStatusSheet = false; viewModel.changeStatus(status) },
+                        shape = MaterialTheme.shapes.medium,
+                        color = if (isSelected) containerColor else MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = status,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = if (isSelected) contentColor else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            if (isSelected) Icon(
+                                Icons.Default.Check, contentDescription = null,
+                                tint = contentColor, modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
-            },
-            confirmButton = {},
-            dismissButton = { TextButton(onClick = { showStatusDialog = false }) { Text("Cancelar") } }
+            }
+        }
+    }
+}
+
+// ── Cores por status de orçamento ────────────────────────────────────────────
+
+@Composable
+fun orcamentoStatusColors(status: String): Pair<androidx.compose.ui.graphics.Color, androidx.compose.ui.graphics.Color> = when (status) {
+    "Pendente"  -> MaterialTheme.colorScheme.tertiaryContainer  to MaterialTheme.colorScheme.onTertiaryContainer
+    "Aprovado"  -> MaterialTheme.colorScheme.primaryContainer   to MaterialTheme.colorScheme.onPrimaryContainer
+    "Rejeitado" -> MaterialTheme.colorScheme.errorContainer     to MaterialTheme.colorScheme.onErrorContainer
+    "Executado" -> MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
+    else        -> MaterialTheme.colorScheme.surfaceVariant     to MaterialTheme.colorScheme.onSurfaceVariant
+}
+
+@Composable
+fun OrcamentoStatusChip(status: String) {
+    val (containerColor, contentColor) = orcamentoStatusColors(status)
+    Surface(shape = MaterialTheme.shapes.small, color = containerColor) {
+        Text(
+            text = status,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            style = MaterialTheme.typography.labelSmall,
+            color = contentColor
         )
     }
 }
@@ -152,6 +216,9 @@ private fun OrcamentoContent(detalhe: OrcamentoDetalhe, actionLoading: Boolean) 
         InfoRow(label = "OS vinculada", value = "OS #${orc.osNumero}")
         InfoRow(label = "Veículo",      value = "${orc.placa} · ${orc.modelo}")
         InfoRow(label = "Cliente",      value = orc.clienteNome)
+        if (!orc.clienteTelefone.isNullOrBlank()) {
+            InfoRow(label = "Telefone", value = orc.clienteTelefone)
+        }
         InfoRow(label = "Data",         value = orc.createdAt.take(10))
 
         HorizontalDivider()
@@ -164,10 +231,9 @@ private fun OrcamentoContent(detalhe: OrcamentoDetalhe, actionLoading: Boolean) 
         } else {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    // Cabeçalho
                     Row(Modifier.fillMaxWidth()) {
                         Text("Descrição", Modifier.weight(1f), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
-                        Text("Qtd", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+                        Text("Qtd",   style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
                         Spacer(Modifier.width(16.dp))
                         Text("Unit.", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
                         Spacer(Modifier.width(16.dp))
@@ -187,6 +253,8 @@ private fun OrcamentoContent(detalhe: OrcamentoDetalhe, actionLoading: Boolean) 
                 }
             }
         }
+
+        Spacer(Modifier.height(16.dp))
     }
 }
 

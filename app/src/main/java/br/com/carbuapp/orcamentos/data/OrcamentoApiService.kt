@@ -1,5 +1,6 @@
 package br.com.carbuapp.orcamentos.data
 
+import okhttp3.ResponseBody
 import retrofit2.http.*
 
 interface OrcamentoApiService {
@@ -25,4 +26,8 @@ interface OrcamentoApiService {
 
     @DELETE("orcamento/{id}")
     suspend fun delete(@Path("id") id: Int)
+
+    @Streaming
+    @GET("orcamento/{id}/pdf")
+    suspend fun getPdf(@Path("id") id: Int): ResponseBody
 }

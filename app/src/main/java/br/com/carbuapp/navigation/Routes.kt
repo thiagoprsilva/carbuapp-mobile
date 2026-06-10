@@ -90,8 +90,15 @@ sealed class Routes(val route: String) {
             else "templates/form"
     }
 
+    // Busca global
+    object Search : Routes("search")
+
     // Perfil / Configurações
-    object Perfil   : Routes("perfil")
-    object Oficina  : Routes("oficina")
-    object Usuarios : Routes("usuarios")
+    object Perfil    : Routes("perfil")
+    object Oficina   : Routes("oficina")
+    object Usuarios  : Routes("usuarios")
+    object UsuarioForm : Routes("usuarios/form?usuarioId={usuarioId}") {
+        fun createRoute(usuarioId: Int? = null) =
+            if (usuarioId != null) "usuarios/form?usuarioId=$usuarioId" else "usuarios/form"
+    }
 }

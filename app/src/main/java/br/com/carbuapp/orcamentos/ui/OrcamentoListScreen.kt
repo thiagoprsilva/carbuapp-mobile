@@ -152,21 +152,3 @@ private fun OrcamentoCard(orc: Orcamento, onClick: () -> Unit) {
     }
 }
 
-@Composable
-fun OrcamentoStatusChip(status: String) {
-    val (containerColor, contentColor) = when (status) {
-        "Pendente"  -> MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
-        "Aprovado"  -> MaterialTheme.colorScheme.primaryContainer   to MaterialTheme.colorScheme.onPrimaryContainer
-        "Rejeitado" -> MaterialTheme.colorScheme.errorContainer      to MaterialTheme.colorScheme.onErrorContainer
-        "Executado" -> MaterialTheme.colorScheme.surfaceVariant      to MaterialTheme.colorScheme.onSurfaceVariant
-        else        -> MaterialTheme.colorScheme.surface             to MaterialTheme.colorScheme.onSurface
-    }
-    Surface(shape = MaterialTheme.shapes.small, color = containerColor) {
-        Text(
-            text = status,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            style = MaterialTheme.typography.labelSmall,
-            color = contentColor
-        )
-    }
-}

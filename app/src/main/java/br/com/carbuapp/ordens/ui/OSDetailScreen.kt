@@ -17,7 +17,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.carbuapp.core.util.UiState
 import br.com.carbuapp.dashboard.ui.StatusChip
-import br.com.carbuapp.ordens.domain.model.OrdemServico
 import br.com.carbuapp.ordens.domain.model.OrdemServicoDetalhe
 import br.com.carbuapp.ordens.domain.model.STATUS_OS
 
@@ -28,6 +27,8 @@ fun OSDetailScreen(
     onEdit: (Int) -> Unit,
     onLaudo: (Int) -> Unit = {},
     onFotos: (Int) -> Unit = {},
+    onNewOrcamento: (Int) -> Unit = {},
+    onOrcamentos: () -> Unit = {},
     viewModel: OSDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -35,7 +36,7 @@ fun OSDetailScreen(
 
     val snackbarHost = remember { SnackbarHostState() }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var showStatusDialog by remember { mutableStateOf(false) }
+    var showStatusSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(actionState) {
         when (val s = actionState) {
@@ -59,7 +60,7 @@ fun OSDetailScreen(
                 actions = {
                     if (uiState is UiState.Success) {
                         val detalhe = (uiState as UiState.Success<OrdemServicoDetalhe>).data
-                        IconButton(onClick = { showStatusDialog = true }) {
+                        IconButton(onClick = { showStatusSheet = true }) {
                             Icon(Icons.Default.Edit, contentDescription = "Alterar status")
                         }
                         IconButton(onClick = { onEdit(detalhe.os.id) }) {
@@ -71,6 +72,16 @@ fun OSDetailScreen(
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            if (uiState is UiState.Success) {
+                val osId = (uiState as UiState.Success<OrdemServicoDetalhe>).data.os.id
+                ExtendedFloatingActionButton(
+                    text = { Text("Novo orçamento") },
+                    icon = { Icon(Icons.Default.Receipt, contentDescription = null) },
+                    onClick = { onNewOrcamento(osId) }
+                )
+            }
         },
         snackbarHost = { SnackbarHost(snackbarHost) }
     ) { padding ->
@@ -89,7 +100,8 @@ fun OSDetailScreen(
                     detalhe       = state.data,
                     actionLoading = actionState is UiState.Loading,
                     onLaudo       = { onLaudo(state.data.os.id) },
-                    onFotos       = { onFotos(state.data.os.id) }
+                    onFotos       = { onFotos(state.data.os.id) },
+                    onOrcamentos  = onOrcamentos
                 )
                 else -> Unit
             }
@@ -104,10 +116,7 @@ fun OSDetailScreen(
             text = { Text("Tem certeza que deseja excluir esta ordem de serviço? Esta ação não pode ser desfeita.") },
             confirmButton = {
                 TextButton(
-                    onClick = {
-                        showDeleteDialog = false
-                        viewModel.delete(onDeleted = onBack)
-                    }
+                    onClick = { showDeleteDialog = false; viewModel.delete(onDeleted = onBack) }
                 ) { Text("Excluir", color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = {
@@ -116,47 +125,79 @@ fun OSDetailScreen(
         )
     }
 
-    // ── Diálogo: alterar status ──────────────────────────────────────────────
-    if (showStatusDialog) {
-        AlertDialog(
-            onDismissRequest = { showStatusDialog = false },
-            title = { Text("Alterar status") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    STATUS_OS.forEach { status ->
-                        TextButton(
-                            onClick = {
-                                showStatusDialog = false
-                                viewModel.changeStatus(status)
-                            },
-                            modifier = Modifier.fillMaxWidth()
+    // ── Bottom Sheet: alterar status ─────────────────────────────────────────
+    if (showStatusSheet) {
+        ModalBottomSheet(onDismissRequest = { showStatusSheet = false }) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Alterar status da OS",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+                val currentStatus = (uiState as? UiState.Success<OrdemServicoDetalhe>)?.data?.os?.status
+                STATUS_OS.forEach { status ->
+                    val isSelected = status == currentStatus
+                    val (containerColor, contentColor) = osStatusColors(status)
+                    Surface(
+                        onClick = { showStatusSheet = false; viewModel.changeStatus(status) },
+                        shape = MaterialTheme.shapes.medium,
+                        color = if (isSelected) containerColor else MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(status)
+                            Text(
+                                text = status,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = if (isSelected) contentColor else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            if (isSelected) Icon(
+                                Icons.Default.Check, contentDescription = null,
+                                tint = contentColor, modifier = Modifier.size(20.dp)
+                            )
                         }
                     }
                 }
-            },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { showStatusDialog = false }) { Text("Cancelar") }
             }
-        )
+        }
     }
+}
+
+@Composable
+fun osStatusColors(status: String): Pair<androidx.compose.ui.graphics.Color, androidx.compose.ui.graphics.Color> = when (status) {
+    "Aberta"           -> MaterialTheme.colorScheme.primaryContainer   to MaterialTheme.colorScheme.onPrimaryContainer
+    "Em andamento"     -> MaterialTheme.colorScheme.secondaryContainer to MaterialTheme.colorScheme.onSecondaryContainer
+    "Aguardando peças" -> MaterialTheme.colorScheme.tertiaryContainer  to MaterialTheme.colorScheme.onTertiaryContainer
+    "Concluída"        -> MaterialTheme.colorScheme.surfaceVariant     to MaterialTheme.colorScheme.onSurfaceVariant
+    "Cancelada"        -> MaterialTheme.colorScheme.errorContainer     to MaterialTheme.colorScheme.onErrorContainer
+    else               -> MaterialTheme.colorScheme.surfaceVariant     to MaterialTheme.colorScheme.onSurfaceVariant
 }
 
 @Composable
 private fun OSDetalheContent(
     detalhe: OrdemServicoDetalhe,
     actionLoading: Boolean,
-    onLaudo: () -> Unit = {},
-    onFotos: () -> Unit = {}
+    onLaudo:      () -> Unit = {},
+    onFotos:      () -> Unit = {},
+    onOrcamentos: () -> Unit = {}
 ) {
     val os = detalhe.os
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+            .padding(16.dp)
+            .padding(bottom = 88.dp), // espaço para o FAB
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Header com número e status
@@ -176,16 +217,8 @@ private fun OSDetalheContent(
         if (actionLoading) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
 
         // Veículo e Cliente
-        OSInfoCard(
-            icon = Icons.Default.DirectionsCar,
-            title = "Veículo",
-            content = "${os.placa} · ${os.modelo}"
-        )
-        OSInfoCard(
-            icon = Icons.Default.Person,
-            title = "Cliente",
-            content = os.clienteNome
-        )
+        OSInfoCard(icon = Icons.Default.DirectionsCar, title = "Veículo",  content = "${os.placa} · ${os.modelo}")
+        OSInfoCard(icon = Icons.Default.Person,         title = "Cliente", content = os.clienteNome)
 
         // Dados da OS
         Card(modifier = Modifier.fillMaxWidth()) {
@@ -193,11 +226,11 @@ private fun OSDetalheContent(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                OSDetailRow(label = "Categoria", value = os.categoria)
+                OSDetailRow(label = "Categoria",      value = os.categoria)
                 HorizontalDivider()
                 OSDetailRow(label = "Data do serviço", value = os.dataServico)
                 HorizontalDivider()
-                OSDetailRow(label = "Descrição", value = os.descricao)
+                OSDetailRow(label = "Descrição",       value = os.descricao)
                 if (!os.observacoes.isNullOrBlank()) {
                     HorizontalDivider()
                     OSDetailRow(label = "Observações", value = os.observacoes)
@@ -211,25 +244,21 @@ private fun OSDetalheContent(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             SubRecursoChip(
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable(onClick = onLaudo),
+                modifier = Modifier.weight(1f).clickable(onClick = onLaudo),
                 icon = Icons.Default.Description,
                 label = "Laudo",
                 value = if (detalhe.temLaudo) "Preenchido" else "Sem laudo",
                 filled = detalhe.temLaudo
             )
             SubRecursoChip(
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable(onClick = onFotos),
+                modifier = Modifier.weight(1f).clickable(onClick = onFotos),
                 icon = Icons.Default.PhotoCamera,
                 label = "Fotos",
                 value = "${detalhe.totalFotos} foto(s)",
                 filled = detalhe.totalFotos > 0
             )
             SubRecursoChip(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).clickable(onClick = onOrcamentos),
                 icon = Icons.Default.Receipt,
                 label = "Orçamentos",
                 value = "${detalhe.totalOrcamentos}",
@@ -240,11 +269,7 @@ private fun OSDetalheContent(
 }
 
 @Composable
-private fun OSInfoCard(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    title: String,
-    content: String
-) {
+private fun OSInfoCard(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, content: String) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(12.dp),
@@ -253,7 +278,7 @@ private fun OSInfoCard(
         ) {
             Icon(imageVector = icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
             Column {
-                Text(text = title, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+                Text(text = title,   style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
                 Text(text = content, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
             }
         }

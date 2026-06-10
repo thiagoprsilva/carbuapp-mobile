@@ -2,6 +2,8 @@ package br.com.carbuapp.ordens.data
 
 import br.com.carbuapp.core.util.parseHttpError
 import br.com.carbuapp.ordens.data.local.OSDao
+import br.com.carbuapp.ordens.domain.AvariaCreateRequest
+import br.com.carbuapp.ordens.domain.LaudoCreateRequest
 import br.com.carbuapp.ordens.domain.OSCreateRequest
 import br.com.carbuapp.ordens.domain.OSRepository
 import br.com.carbuapp.ordens.domain.model.OrdemServico
@@ -108,6 +110,14 @@ class OSRepositoryImpl @Inject constructor(
         categoria = categoria,
         descricao = descricao,
         dataServico = dataServico,
-        observacoes = observacoes
+        observacoes = observacoes,
+        laudo = laudo?.let { l ->
+            LaudoRequest(
+                km = l.km,
+                nivelCombust = l.nivelCombust,
+                observacoes = l.observacoes,
+                avarias = l.avarias.map { a -> AvariaRequest(a.zona, a.severidade, a.observacao) }
+            )
+        }
     )
 }

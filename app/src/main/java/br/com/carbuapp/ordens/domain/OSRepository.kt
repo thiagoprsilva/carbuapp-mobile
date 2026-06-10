@@ -15,10 +15,24 @@ interface OSRepository {
     suspend fun delete(id: Int): Result<Unit>
 }
 
+data class AvariaCreateRequest(
+    val zona: String,
+    val severidade: String?,
+    val observacao: String?
+)
+
+data class LaudoCreateRequest(
+    val km: Int?,
+    val nivelCombust: String?,
+    val observacoes: String?,
+    val avarias: List<AvariaCreateRequest>
+)
+
 data class OSCreateRequest(
     val veiculoId: Int,
     val categoria: String,
     val descricao: String,
     val dataServico: String,
-    val observacoes: String?
+    val observacoes: String?,
+    val laudo: LaudoCreateRequest? = null
 )

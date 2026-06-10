@@ -1,9 +1,19 @@
 package br.com.carbuapp.navigation
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.WifiOff
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -14,20 +24,72 @@ import br.com.carbuapp.clientes.ui.ClienteDetailScreen
 import br.com.carbuapp.clientes.ui.ClienteFormScreen
 import br.com.carbuapp.clientes.ui.ClienteListScreen
 import br.com.carbuapp.dashboard.ui.DashboardScreen
+import br.com.carbuapp.fotos.ui.FotoGalleryScreen
+import br.com.carbuapp.laudos.ui.LaudoScreen
 import br.com.carbuapp.menu.ui.MenuScreen
 import br.com.carbuapp.orcamentos.ui.OrcamentoDetailScreen
 import br.com.carbuapp.orcamentos.ui.OrcamentoFormScreen
 import br.com.carbuapp.orcamentos.ui.OrcamentoListScreen
+import br.com.carbuapp.ordens.ui.EntradaRapidaScreen
 import br.com.carbuapp.ordens.ui.OSDetailScreen
 import br.com.carbuapp.ordens.ui.OSFormScreen
 import br.com.carbuapp.ordens.ui.OSListScreen
-import br.com.carbuapp.fotos.ui.FotoGalleryScreen
-import br.com.carbuapp.laudos.ui.LaudoScreen
+import br.com.carbuapp.oficina.ui.OficinaPerfilScreen
+import br.com.carbuapp.search.ui.SearchScreen
 import br.com.carbuapp.templates.ui.TemplateFormScreen
 import br.com.carbuapp.templates.ui.TemplateListScreen
+import br.com.carbuapp.usuarios.ui.UsuarioFormScreen
+import br.com.carbuapp.usuarios.ui.UsuariosScreen
 import br.com.carbuapp.veiculos.ui.VeiculoDetailScreen
 import br.com.carbuapp.veiculos.ui.VeiculoFormScreen
 import br.com.carbuapp.veiculos.ui.VeiculoListScreen
+import javax.inject.Inject
+
+// ViewModel auxiliar para observar conectividade no Composable
+import androidx.lifecycle.ViewModel
+import br.com.carbuapp.core.connectivity.ConnectivityObserver as IConnectivityObserver
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.StateFlow
+
+@HiltViewModel
+class ConnectivityViewModel @Inject constructor(
+    connectivityObserver: IConnectivityObserver
+) : ViewModel() {
+    val isOnline: StateFlow<Boolean> = connectivityObserver.isOnline
+}
+
+@Composable
+fun OfflineBanner() {
+    val viewModel: ConnectivityViewModel = hiltViewModel()
+    val isOnline by viewModel.isOnline.collectAsStateWithLifecycle()
+
+    AnimatedVisibility(
+        visible = !isOnline,
+        enter = expandVertically(),
+        exit = shrinkVertically()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.errorContainer)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Icon(
+                Icons.Default.WifiOff,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onErrorContainer,
+                modifier = Modifier.size(18.dp)
+            )
+            Text(
+                text = "Sem conexão com a internet",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onErrorContainer
+            )
+        }
+    }
+}
 
 @Composable
 fun MainScreen(
@@ -38,16 +100,21 @@ fun MainScreen(
     Scaffold(
         bottomBar = { BottomNavBar(navController = mainNavController) }
     ) { innerPadding ->
-        NavHost(
-            navController = mainNavController,
-            startDestination = Routes.Dashboard.route,
-            modifier = Modifier.padding(innerPadding)
-        ) {
+        Column(modifier = Modifier.padding(innerPadding)) {
+            OfflineBanner()
+
+            NavHost(
+                navController = mainNavController,
+                startDestination = Routes.Dashboard.route,
+                modifier = Modifier.weight(1f)
+            ) {
             // ── Dashboard ──────────────────────────────────────────────────────
             composable(Routes.Dashboard.route) {
                 DashboardScreen(
                     onOSClick        = { osId  -> mainNavController.navigate(Routes.OSDetail.createRoute(osId)) },
-                    onOrcamentoClick = { orcId -> mainNavController.navigate(Routes.OrcamentoDetail.createRoute(orcId)) }
+                    onOrcamentoClick = { orcId -> mainNavController.navigate(Routes.OrcamentoDetail.createRoute(orcId)) },
+                    onSearchClick    = { mainNavController.navigate(Routes.Search.route) },
+                    onNovaOS         = { mainNavController.navigate(Routes.EntradaRapida.route) }
                 )
             }
 
@@ -131,10 +198,13 @@ fun MainScreen(
             ) { back ->
                 val osId = back.arguments!!.getInt("osId")
                 OSDetailScreen(
-                    onBack   = { mainNavController.popBackStack() },
-                    onEdit   = { id -> mainNavController.navigate(Routes.OSForm.createRoute(id)) },
-                    onLaudo  = { id -> mainNavController.navigate(Routes.Laudo.createRoute(id)) },
-                    onFotos  = { id -> mainNavController.navigate(Routes.FotoGallery.createRoute(id)) }
+                    onBack         = { mainNavController.popBackStack() },
+                    onEdit         = { id -> mainNavController.navigate(Routes.OSForm.createRoute(id)) },
+                    onLaudo        = { id -> mainNavController.navigate(Routes.Laudo.createRoute(id)) },
+                    onFotos        = { id -> mainNavController.navigate(Routes.FotoGallery.createRoute(id)) },
+                    onNewOrcamento = { osId -> mainNavController.navigate(Routes.OrcamentoForm.createRoute(osId = osId)) },
+                    onOrcamentos   = { mainNavController.navigate(Routes.Orcamentos.route) }
+
                 )
             }
             composable(
@@ -167,6 +237,16 @@ fun MainScreen(
                     veiculoId = veiculoId,
                     onBack    = { mainNavController.popBackStack() },
                     onSaved   = { mainNavController.popBackStack() }
+                )
+            }
+            composable(Routes.EntradaRapida.route) {
+                EntradaRapidaScreen(
+                    onBack     = { mainNavController.popBackStack() },
+                    onOSCriada = { osId ->
+                        mainNavController.navigate(Routes.OSDetail.createRoute(osId)) {
+                            popUpTo(Routes.Dashboard.route)
+                        }
+                    }
                 )
             }
 
@@ -216,7 +296,9 @@ fun MainScreen(
                             popUpTo(Routes.Main.route) { inclusive = true }
                         }
                     },
-                    onTemplates = { mainNavController.navigate(Routes.TemplateList.route) }
+                    onTemplates = { mainNavController.navigate(Routes.TemplateList.route) },
+                    onOficina   = { mainNavController.navigate(Routes.Oficina.route) },
+                    onUsuarios  = { mainNavController.navigate(Routes.Usuarios.route) }
                 )
             }
 
@@ -237,6 +319,43 @@ fun MainScreen(
                     onSaved = { mainNavController.popBackStack() }
                 )
             }
-        }
+
+            // ── Busca global ───────────────────────────────────────────────────
+            composable(Routes.Search.route) {
+                SearchScreen(
+                    onBack           = { mainNavController.popBackStack() },
+                    onClienteClick   = { id -> mainNavController.navigate(Routes.ClienteDetail.createRoute(id)) },
+                    onVeiculoClick   = { id -> mainNavController.navigate(Routes.VeiculoDetail.createRoute(id)) },
+                    onOrcamentoClick = { id -> mainNavController.navigate(Routes.OrcamentoDetail.createRoute(id)) },
+                    onOSClick        = { id -> mainNavController.navigate(Routes.OSDetail.createRoute(id)) }
+                )
+            }
+
+            // ── Perfil da Oficina ──────────────────────────────────────────────
+            composable(Routes.Oficina.route) {
+                OficinaPerfilScreen(
+                    onBack = { mainNavController.popBackStack() }
+                )
+            }
+
+            // ── Usuários ───────────────────────────────────────────────────────
+            composable(Routes.Usuarios.route) {
+                UsuariosScreen(
+                    onBack     = { mainNavController.popBackStack() },
+                    onAddClick = { mainNavController.navigate(Routes.UsuarioForm.createRoute()) },
+                    onEditClick = { id -> mainNavController.navigate(Routes.UsuarioForm.createRoute(id)) }
+                )
+            }
+            composable(
+                route = Routes.UsuarioForm.route,
+                arguments = listOf(navArgument("usuarioId") { type = NavType.IntType; defaultValue = -1 })
+            ) {
+                UsuarioFormScreen(
+                    onBack  = { mainNavController.popBackStack() },
+                    onSaved = { mainNavController.popBackStack() }
+                )
+            }
+        } // NavHost
+        } // Column
     }
 }

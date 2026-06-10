@@ -20,6 +20,8 @@ fun MenuScreen(
     onLogout: () -> Unit,
     onTrocarOficina: () -> Unit,
     onTemplates: () -> Unit = {},
+    onOficina: () -> Unit = {},
+    onUsuarios: () -> Unit = {},
     viewModel: MenuViewModel = hiltViewModel()
 ) {
     val user by viewModel.currentUser.collectAsStateWithLifecycle()
@@ -48,6 +50,22 @@ fun MenuScreen(
                 label = "Templates de Serviço",
                 onClick = onTemplates
             )
+
+            // ── Seção: Administração (somente admin/superadmin) ───────────
+            if (user?.isAdmin == true) {
+                Spacer(Modifier.height(4.dp))
+                MenuSectionHeader("Administração")
+                MenuItemRow(
+                    icon  = Icons.Default.Store,
+                    label = "Perfil da Oficina",
+                    onClick = onOficina
+                )
+                MenuItemRow(
+                    icon  = Icons.Default.Group,
+                    label = "Usuários",
+                    onClick = onUsuarios
+                )
+            }
 
             // ── Seção: Conta ──────────────────────────────────────────────
             MenuSectionHeader("Conta")

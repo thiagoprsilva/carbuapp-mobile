@@ -15,6 +15,7 @@ interface OrcamentoRepository {
     suspend fun update(id: Int, itens: List<OrcamentoItemInput>): Result<Orcamento>
     suspend fun updateStatus(id: Int, status: String): Result<Orcamento>
     suspend fun delete(id: Int): Result<Unit>
+    suspend fun getPdf(id: Int): Result<ByteArray>
 }
 
 data class OrcamentoItemInput(

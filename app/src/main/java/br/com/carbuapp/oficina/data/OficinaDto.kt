@@ -2,6 +2,13 @@ package br.com.carbuapp.oficina.data
 
 import br.com.carbuapp.oficina.domain.Oficina
 
+data class OficinaUpdateRequest(
+    val nome: String,
+    val responsavel: String,
+    val telefone: String,
+    val endereco: String
+)
+
 data class OficinaCountDto(
     val usuarios: Int,
     val clientes: Int

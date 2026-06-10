@@ -20,7 +20,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.com.carbuapp.core.util.UiState
 import br.com.carbuapp.laudos.domain.model.NIVEIS_COMBUSTIVEL
-import br.com.carbuapp.laudos.domain.model.SEVERIDADES
 import br.com.carbuapp.laudos.domain.model.ZONAS_VEICULO
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -291,13 +290,30 @@ private fun AvariaFormCard(
             onSelect = { onZona(it ?: "") }
         )
 
-        LaudoDropdown(
-            label = "Severidade",
-            selected = avaria.severidade,
-            options = SEVERIDADES,
-            allowClear = true,
-            onSelect = onSeveri
-        )
+        // Chips de severidade
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            val severidades = listOf(
+                Triple("Leve",     MaterialTheme.colorScheme.tertiaryContainer,  MaterialTheme.colorScheme.onTertiaryContainer),
+                Triple("Moderado", MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer),
+                Triple("Grave",    MaterialTheme.colorScheme.errorContainer,     MaterialTheme.colorScheme.onErrorContainer)
+            )
+            severidades.forEach { (label, bg, fg) ->
+                val selected = avaria.severidade == label
+                FilterChip(
+                    selected = selected,
+                    onClick  = { onSeveri(if (selected) null else label) },
+                    label    = { Text(label) },
+                    colors   = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = bg,
+                        selectedLabelColor     = fg
+                    ),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
 
         OutlinedTextField(
             value = avaria.observacao,

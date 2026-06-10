@@ -88,12 +88,26 @@ data class OSDetalheDto(
 
 // ── Request body ──────────────────────────────────────────────────────────────
 
+data class AvariaRequest(
+    val zona: String,
+    val severidade: String?,
+    val observacao: String?
+)
+
+data class LaudoRequest(
+    val km: Int?,
+    val nivelCombust: String?,
+    val observacoes: String?,
+    val avarias: List<AvariaRequest>
+)
+
 data class OSRequest(
     val veiculoId: Int,
     val categoria: String,
     val descricao: String,
     val dataServico: String,
-    val observacoes: String?
+    val observacoes: String?,
+    val laudo: LaudoRequest? = null
 )
 
 data class OSStatusRequest(

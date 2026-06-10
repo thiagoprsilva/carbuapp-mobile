@@ -15,6 +15,7 @@ data class OrcamentoEntity(
     val modelo: String,
     val clienteNome: String,
     val clienteId: Int,
+    val clienteTelefone: String? = null,
     val osId: Int,
     val osNumero: Int,
     val createdAt: String,

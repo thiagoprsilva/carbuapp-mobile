@@ -25,12 +25,30 @@ import br.com.carbuapp.dashboard.domain.OSRecente
 fun DashboardScreen(
     onOSClick: (Int) -> Unit = {},
     onOrcamentoClick: (Int) -> Unit = {},
+    onSearchClick: () -> Unit = {},
+    onNovaOS: () -> Unit = {},
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Dashboard") }) }
+        topBar = {
+            TopAppBar(
+                title = { Text("Dashboard") },
+                actions = {
+                    IconButton(onClick = onSearchClick) {
+                        Icon(Icons.Default.Search, contentDescription = "Buscar")
+                    }
+                }
+            )
+        },
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                text = { Text("Entrada de Veículo") },
+                icon = { Icon(Icons.Default.DirectionsCar, contentDescription = null) },
+                onClick = onNovaOS
+            )
+        }
     ) { padding ->
         PullToRefreshBox(
             isRefreshing = uiState is UiState.Loading,
