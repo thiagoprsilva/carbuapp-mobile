@@ -1,5 +1,6 @@
 package br.com.carbuapp.auth.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -23,8 +25,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import br.com.carbuapp.R
 import br.com.carbuapp.core.util.UiState
 
 @Composable
@@ -65,16 +67,15 @@ fun LoginScreen(
             // ── Logo / Título ───────────────────────────────────────────────
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "⚙",
-                fontSize = 56.sp,
-                textAlign = TextAlign.Center
+            Image(
+                painter = painterResource(id = R.drawable.logo_carbuapp),
+                contentDescription = "CarbuApp",
+                modifier = Modifier.size(110.dp)
             )
 
             Text(
                 text = "CarbuApp",
                 style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
                 textAlign = TextAlign.Center
             )

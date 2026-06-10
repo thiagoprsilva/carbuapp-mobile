@@ -1,54 +1,81 @@
 package br.com.carbuapp.ui.theme
 
-import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
+
+// =========================================================
+// Esquema de cores CarbuApp — espelha a identidade visual do
+// frontend Web (sempre tema escuro, laranja como cor primária)
+// =========================================================
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = CarbuPrimary,
+    onPrimary = CarbuPrimaryText,
+    primaryContainer = Color(0xFF2A1B0E),
+    onPrimaryContainer = Color(0xFFFDBA74),
+
+    secondary = CarbuBlue,
+    onSecondary = CarbuBg,
+    secondaryContainer = Color(0xFF1A2438),
+    onSecondaryContainer = Color(0xFF93C5FD),
+
+    tertiary = CarbuGreen,
+    onTertiary = CarbuBg,
+    tertiaryContainer = Color(0xFF16291C),
+    onTertiaryContainer = Color(0xFF86EFAC),
+
+    background = CarbuBg,
+    onBackground = CarbuText,
+
+    surface = CarbuCard,
+    onSurface = CarbuText,
+    surfaceVariant = CarbuCard2,
+    onSurfaceVariant = CarbuMuted,
+    surfaceContainer = CarbuCard,
+    surfaceContainerHigh = CarbuCard2,
+    surfaceContainerHighest = CarbuGrayBtn,
+    surfaceContainerLow = CarbuSidebar,
+    surfaceContainerLowest = CarbuBg,
+
+    outline = CarbuBorder,
+    outlineVariant = CarbuBorder,
+
+    error = CarbuRed,
+    onError = CarbuBg,
+    errorContainer = Color(0xFF2C1A1A),
+    onErrorContainer = Color(0xFFFCA5A5),
+
+    inverseSurface = CarbuText,
+    inverseOnSurface = CarbuBg,
+    inversePrimary = CarbuPrimaryHover,
 )
 
+// O Web não possui tema claro — mantemos um claro discreto apenas
+// como fallback, mas o app sempre força o tema escuro da marca.
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
+    primary = CarbuPrimary,
     onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    secondary = CarbuBlue,
+    tertiary = CarbuGreen,
+    background = Color(0xFFFAFAFA),
+    onBackground = Color(0xFF111115),
+    surface = Color.White,
+    onSurface = Color(0xFF111115),
+    error = CarbuRed,
 )
 
 @Composable
 fun CarbuAppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    // CarbuApp tem identidade visual fixa (sempre escura), igual ao Web.
+    darkTheme: Boolean = true,
+    // Cores dinâmicas (Material You) desativadas para preservar a marca.
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
+    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
     MaterialTheme(
         colorScheme = colorScheme,
