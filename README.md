@@ -107,6 +107,24 @@ A paleta de cores (`ui/theme/Color.kt`) foi extraída diretamente de `frontend/s
 
 ---
 
+# Screenshots
+
+> Capturas das principais telas, no mesmo layout/identidade visual implementado no app Android (Kotlin + Jetpack Compose).
+
+| Dashboard | Clientes | Veículos |
+|---|---|---|
+| ![Dashboard](screenshots/dashboard.png) | ![Clientes](screenshots/clientes.png) | ![Veículos](screenshots/veiculos.png) |
+
+| Ordens de Serviço | Orçamentos | Detalhe do Orçamento |
+|---|---|---|
+| ![Ordens de Serviço](screenshots/ordens-servico.png) | ![Orçamentos](screenshots/orcamentos.png) | ![Detalhe do Orçamento](screenshots/orcamento-detalhe.png) |
+
+| Entrada de Veículo |
+|---|
+| ![Entrada de Veículo](screenshots/entrada-veiculo.png) |
+
+---
+
 # Integração com Backend
 
 API consumida: **`https://api.carbuapp.com.br/`** (mesma API do frontend web, Node.js + Express + Prisma + PostgreSQL).
